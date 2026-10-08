@@ -27,6 +27,13 @@ jobs:
       - name: Run pipeline end-to-end (fails if F1 < 0.95)
         run: ./run_pipeline.sh -o results -t 2 -m 0.95
 
+      - name: GIAB script smoke test (offline, synthetic stand-in inputs, hap.py skipped)
+        run: |
+          printf 'chrS\t0\t10674\n' > results/all.bed
+          giab/run_giab_chr20.sh -R chrS:2000-9000 -t 2 -c 2000 -o giab_smoke -H skip \
+            -b results/alignment/SAMPLE01.markdup.bam -f results/data/reference/chrS.fa \
+            -v results/variants/SAMPLE01.truth.norm.vcf.gz -B results/all.bed
+
       - uses: actions/upload-artifact@v4
         with:
           name: pipeline-report

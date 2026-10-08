@@ -2,7 +2,7 @@
 
 [![pipeline-ci](https://github.com/Hakan-Cam/germline-variant-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Hakan-Cam/germline-variant-pipeline/actions/workflows/ci.yml)
 
-A small, end-to-end **germline small-variant pipeline** in Bash + Python: paired-end FASTQ → aligned BAM → normalised VCF → **consequence annotation, HGVS notation and tiered prioritisation** → Markdown report, with built-in **benchmarking against a truth set**.
+A small, end-to-end **germline small-variant pipeline** in Bash + Python: paired-end FASTQ → aligned BAM → normalised VCF → **consequence annotation, HGVS notation and tiered prioritisation** → Markdown report, with built-in **benchmarking against a truth set** — on synthetic data in CI, and on the **GIAB HG002 reference genome scored with hap.py** ([`giab/`](giab/)).
 
 It runs in under 10 seconds on a laptop, needs no downloads, and is tested on every push with GitHub Actions.
 
@@ -78,17 +78,32 @@ A missense variant reported **Benign** with population AF 0.12 is correctly demo
 | 20x | 1.00 | 1.00 | 1.00 |
 | 40x | 1.00 | 1.00 | 1.00 |
 
+## Real-data benchmark: GIAB HG002 chr20 + hap.py
+
+[`giab/run_giab_chr20.sh`](giab/) runs the same `bwa mem → markdup → bcftools` steps (shared via `lib/steps.sh`) on real Illumina 35x reads from **HG002**, re-aligned from FASTQ, and scores the calls with **hap.py** (vcfeval engine) against the **NIST v4.2.1** truth set in GIAB confident regions.
+
+```bash
+giab/run_giab_chr20.sh -R chr20:10000000-15000000   # quick 5 Mb test
+giab/run_giab_chr20.sh -R chr20 -t 16               # full chromosome 20
+```
+
+It can also be launched with no local setup from **Actions → giab-hg002-benchmark → Run workflow**; the hap.py table is posted to the run summary. See [`giab/README.md`](giab/README.md) for data sources and design notes.
+
 ## Repository layout
 
 ```
 run_pipeline.sh              orchestration: strict mode, logging, error trap, version capture
+lib/steps.sh                 shared align_reads / call_variants (parallel scatter-gather) functions
+giab/run_giab_chr20.sh       real-data benchmark: HG002 chr20, NIST v4.2.1 truth, hap.py
 scripts/
   simulate_data.py           synthetic genome, GTF, diploid 2x150 reads, truth VCF, toy knowledge base
   annotate_variants.py       consequence prediction, HGVS c./p., KB join, tiering
   benchmark.py               precision/recall/F1, genotype + annotation concordance (CI gate)
   make_report.py             Markdown report
-tests/test_annotate.py       unit tests on hand-built + / - strand transcripts
-.github/workflows/ci.yml     installs tools, runs tests and the full pipeline on every push
+  summarize_happy.py         hap.py summary.csv -> Markdown / JSON
+tests/                       unit tests (+ / - strand transcripts, tiering, hap.py parsing)
+.github/workflows/ci.yml     tests + synthetic pipeline + GIAB-script smoke test on every push
+.github/workflows/giab.yml   manual GIAB HG002 + hap.py benchmark run
 example_output/              report and tables from a reference run
 ```
 
@@ -98,7 +113,7 @@ example_output/              report and tables from a reference run
 |---|---|
 | Alignment | `bwa mem` with read groups → `samtools fixmate -m` → `sort` → `markdup` |
 | QC | `samtools flagstat`, `samtools coverage`, per-base depth over coding exons (GTF → BED with `awk`), % bases ≥20x |
-| Calling | `bcftools mpileup -q20 -Q20 -a AD,DP` → `bcftools call -mv` |
+| Calling | `bcftools mpileup -q20 -Q20 -a AD,DP` → `bcftools call -mv`, scattered over genomic windows in parallel (`xargs -P`) and gathered with `bcftools concat` |
 | Normalisation | `bcftools norm -m -any` (left-align, split multi-allelics); the truth set is normalised identically before comparison |
 | Filtering | soft filter `LowQual` for `QUAL<30 \|\| DP<10` (records kept, flagged) |
 | Annotation | CDS reconstruction from GTF + FASTA, strand-aware; consequence from translated ref vs alt protein; Sequence Ontology terms with VEP-style impact (HIGH/MODERATE/LOW/MODIFIER) |
@@ -108,7 +123,7 @@ example_output/              report and tables from a reference run
 
 This is a compact demonstration, not a clinical pipeline.
 
-- **Data:** synthetic genome and a toy knowledge base. Next: run on a GIAB HG002 region and score with `hap.py` against the GIAB high-confidence calls.
+- **Data:** the annotation/tiering demo uses a synthetic genome and toy knowledge base; real-data accuracy is measured separately on GIAB HG002 chr20. Next: GIAB difficult-region stratifications in hap.py.
 - **Annotation:** coding-only transcripts (no UTRs); simplified HGVS (no 3′ shifting, insertions not rewritten as `dup` — e.g. the in-frame deletion is reported left-aligned as `c.399_401del`). Production use would rely on VEP/SnpEff with MANE transcripts, ClinVar and gnomAD.
 - **Classification:** the tiers are ACMG-*inspired* triage rules, not ACMG/AMP classification.
 - **Workflow:** a single Bash script keeps this readable; a larger version would move to Snakemake or Nextflow with containers and GATK HaplotypeCaller/DeepVariant.

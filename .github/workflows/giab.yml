@@ -1,0 +1,42 @@
+name: giab-hg002-benchmark
+
+# Manual run: Actions tab -> "giab-hg002-benchmark" -> Run workflow.
+# Default is a 5 Mb region for a quick run; enter "chr20" for the full chromosome (takes considerably longer).
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region to benchmark (e.g. chr20:10000000-15000000 or chr20)"
+        default: "chr20:10000000-15000000"
+        required: true
+
+jobs:
+  giab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools and pull hap.py image
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bwa samtools bcftools tabix
+          docker pull jmcdani20/hap.py:v0.3.12
+
+      - name: Run GIAB HG002 benchmark
+        run: giab/run_giab_chr20.sh -R "${{ inputs.region }}" -t 4 -o giab_results -H docker
+
+      - name: Publish summary
+        if: always()
+        run: cat giab_results/*.happy_report.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: giab-hg002-happy
+          path: |
+            giab_results/*.happy_report.md
+            giab_results/*.happy_summary.json
+            giab_results/happy/
+            giab_results/qc/
+            giab_results/logs/

@@ -96,3 +96,17 @@ def test_tiering():
     assert av.assign_tier({**base, "impact": "MODERATE"})[0] == "Tier2"
     assert av.assign_tier({**base, "impact": "LOW", "kb_clinsig": "Pathogenic"})[0] == "Tier1"
     assert av.assign_tier({**base, "filter": "LowQual"})[0] == "Filtered"
+
+
+def test_summarize_happy(tmp_path):
+    """hap.py summary.csv (dummy fixture values) is parsed into Markdown + JSON."""
+    import json
+    import subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    md, js = tmp_path / "r.md", tmp_path / "r.json"
+    subprocess.run([sys.executable, os.path.join(root, "scripts", "summarize_happy.py"),
+                    "--summary", os.path.join(root, "tests", "fixtures", "happy.summary.csv"),
+                    "--out-md", str(md), "--out-json", str(js), "--meta", "Region=chr20"], check=True)
+    s = json.loads(js.read_text())
+    assert s["SNP"]["PASS"]["tp"] == 985 and s["INDEL"]["ALL"]["recall"] == 0.9
+    assert "| SNP | PASS | 1,000 | 985 | 15 | 4 |" in md.read_text()

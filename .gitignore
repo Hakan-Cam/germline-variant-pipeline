@@ -2,3 +2,5 @@ results/
 __pycache__/
 .pytest_cache/
 *.pyc
+giab_results/
+giab_smoke/

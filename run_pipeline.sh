@@ -16,6 +16,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/steps.sh
+source "$SCRIPT_DIR/lib/steps.sh"
 OUTDIR="results"
 SAMPLE="SAMPLE01"
 THREADS=2
@@ -80,13 +82,8 @@ samtools faidx "$REF"
 # ---- 3. align ---------------------------------------------------------------
 step "3/8 aligning reads (bwa mem, $THREADS threads)"
 BAM="$ALN/$SAMPLE.markdup.bam"
-RG="@RG\tID:${SAMPLE}.L001\tSM:${SAMPLE}\tLB:${SAMPLE}.lib1\tPL:ILLUMINA"
-bwa mem -t "$THREADS" -R "$RG" "$REF" \
-    "$DATA/reads/${SAMPLE}_R1.fastq.gz" "$DATA/reads/${SAMPLE}_R2.fastq.gz" 2> "$LOG/bwa_mem.log" \
-  | samtools fixmate -m -u - - \
-  | samtools sort -u -@ "$THREADS" -T "$ALN/tmp.$SAMPLE" - \
-  | samtools markdup -@ "$THREADS" -f "$QC/$SAMPLE.markdup_stats.txt" - "$BAM"
-samtools index "$BAM"
+align_reads "$REF" "$DATA/reads/${SAMPLE}_R1.fastq.gz" "$DATA/reads/${SAMPLE}_R2.fastq.gz" \
+  "$SAMPLE" "$BAM" "$THREADS" "$QC/$SAMPLE.markdup_stats.txt" "$LOG/bwa_mem.log"
 
 # ---- 4. qc ------------------------------------------------------------------
 step "4/8 alignment QC"
@@ -103,11 +100,7 @@ sed -n '1p;7p' "$QC/$SAMPLE.flagstat.txt" | sed 's/^/    /' >&2
 step "5/8 calling variants (bcftools)"
 RAW="$VAR/$SAMPLE.raw.vcf.gz"
 CALLS="$VAR/$SAMPLE.filtered.vcf.gz"
-bcftools mpileup -Ou -f "$REF" -a FORMAT/AD,FORMAT/DP -q 20 -Q 20 --max-depth 1000 "$BAM" 2> "$LOG/mpileup.log" \
-  | bcftools call -mv -Oz -o "$RAW"
-bcftools norm -f "$REF" -m -any -Ou "$RAW" 2> "$LOG/norm.log" \
-  | bcftools filter -s LowQual -e "QUAL<$MIN_QUAL || INFO/DP<$MIN_DP" -Oz -o "$CALLS"
-tabix -f -p vcf "$CALLS"
+call_variants "$REF" "$BAM" "$RAW" "$CALLS" "$THREADS" "$MIN_QUAL" "$MIN_DP" "$LOG"
 bcftools stats "$CALLS" > "$QC/$SAMPLE.bcftools_stats.txt"
 n_pass=$(bcftools view -H -f PASS "$CALLS" | wc -l)
 n_all=$(bcftools view -H "$CALLS" | wc -l)
