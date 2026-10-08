@@ -29,6 +29,23 @@ Without either, use `-H skip` to stop after variant calling.
 
 No local setup? Run it on GitHub: **Actions → giab-hg002-benchmark → Run workflow**. The report appears on the run's summary page and is uploaded as an artifact.
 
+## Results
+
+**Result — HG002, chr20:10,000,000–15,000,000** (35x, 646,959 read pairs re-aligned; 7,248 truth variants; 4.91 Mb confident; GitHub-hosted runner, 4 threads, ~2 min pipeline time):
+
+| Type | Filter | Truth | TP | FN | FP | Recall | Precision | F1 |
+|---|---|---|---|---|---|---|---|---|
+| SNP | PASS | 6,037 | 5,983 | 54 | 13 | 0.9911 | 0.9978 | **0.9944** |
+| SNP | ALL | 6,037 | 5,997 | 40 | 29 | 0.9934 | 0.9952 | 0.9943 |
+| INDEL | PASS | 1,018 | 947 | 71 | 50 | 0.9303 | 0.9497 | **0.9399** |
+| INDEL | ALL | 1,018 | 960 | 58 | 57 | 0.9430 | 0.9438 | 0.9434 |
+
+What the numbers say:
+
+- **SNPs are called at >99% recall and precision**, as expected for 35x PCR-free data with bwa + bcftools.
+- **Indels are the weak point, and mostly because of genotyping, not detection:** 48 of the 50 PASS indel false positives are at true variant sites with the wrong zygosity (hap.py counts each of these as both an FP and an FN).
+- **One generic filter does not fit both classes.** `QUAL<30 || DP<10` halves SNP false positives (29 → 13) at almost no cost to F1, but for indels it removes more true positives (13) than false ones (7), so indel F1 drops. Variant-type-specific filtering, or a model-based caller such as DeepVariant or GATK HaplotypeCaller (local re-assembly), is the obvious next step for indels.
+
 ## Outputs (`giab_results/`)
 
 ```

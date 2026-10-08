@@ -2,7 +2,7 @@
 
 [![pipeline-ci](https://github.com/Hakan-Cam/germline-variant-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Hakan-Cam/germline-variant-pipeline/actions/workflows/ci.yml)
 
-A small, end-to-end **germline small-variant pipeline** in Bash + Python: paired-end FASTQ → aligned BAM → normalised VCF → **consequence annotation, HGVS notation and tiered prioritisation** → Markdown report, with built-in **benchmarking against a truth set** — on synthetic data in CI, and on the **GIAB HG002 reference genome scored with hap.py** ([`giab/`](giab/)).
+A small, end-to-end **germline small-variant pipeline** in Bash + Python: paired-end FASTQ → aligned BAM → normalised VCF → **consequence annotation, HGVS notation and tiered prioritisation** → Markdown report, with built-in **benchmarking against a truth set** — on synthetic data in CI, and on the **GIAB HG002 reference genome scored with hap.py** (SNP F1 0.994, indel F1 0.940; [`giab/`](giab/)).
 
 It runs in under 10 seconds on a laptop, needs no downloads, and is tested on every push with GitHub Actions.
 
@@ -86,6 +86,21 @@ A missense variant reported **Benign** with population AF 0.12 is correctly demo
 giab/run_giab_chr20.sh -R chr20:10000000-15000000   # quick 5 Mb test
 giab/run_giab_chr20.sh -R chr20 -t 16               # full chromosome 20
 ```
+
+**Result — HG002, chr20:10,000,000–15,000,000** (35x, 646,959 read pairs re-aligned; 7,248 truth variants; 4.91 Mb confident; GitHub-hosted runner, 4 threads, ~2 min pipeline time):
+
+| Type | Filter | Truth | TP | FN | FP | Recall | Precision | F1 |
+|---|---|---|---|---|---|---|---|---|
+| SNP | PASS | 6,037 | 5,983 | 54 | 13 | 0.9911 | 0.9978 | **0.9944** |
+| SNP | ALL | 6,037 | 5,997 | 40 | 29 | 0.9934 | 0.9952 | 0.9943 |
+| INDEL | PASS | 1,018 | 947 | 71 | 50 | 0.9303 | 0.9497 | **0.9399** |
+| INDEL | ALL | 1,018 | 960 | 58 | 57 | 0.9430 | 0.9438 | 0.9434 |
+
+What the numbers say:
+
+- **SNPs are called at >99% recall and precision**, as expected for 35x PCR-free data with bwa + bcftools.
+- **Indels are the weak point, and mostly because of genotyping, not detection:** 48 of the 50 PASS indel false positives are at true variant sites with the wrong zygosity (hap.py counts each of these as both an FP and an FN).
+- **One generic filter does not fit both classes.** `QUAL<30 || DP<10` halves SNP false positives (29 → 13) at almost no cost to F1, but for indels it removes more true positives (13) than false ones (7), so indel F1 drops. Variant-type-specific filtering, or a model-based caller such as DeepVariant or GATK HaplotypeCaller (local re-assembly), is the obvious next step for indels.
 
 It can also be launched with no local setup from **Actions → giab-hg002-benchmark → Run workflow**; the hap.py table is posted to the run summary. See [`giab/README.md`](giab/README.md) for data sources and design notes.
 
