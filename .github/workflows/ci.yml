@@ -1,0 +1,37 @@
+name: pipeline-ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install bioinformatics tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bwa samtools bcftools tabix
+          pip install pytest
+
+      - name: Unit tests (consequence prediction + tiering)
+        run: python -m pytest -q tests
+
+      - name: Run pipeline end-to-end (fails if F1 < 0.95)
+        run: ./run_pipeline.sh -o results -t 2 -m 0.95
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-report
+          path: |
+            results/*.report.md
+            results/variants/
+            results/qc/
+            results/logs/

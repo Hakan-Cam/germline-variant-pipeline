@@ -1,0 +1,20 @@
+tier	tier_reason	chrom	pos	ref	alt	gene	transcript	strand	consequence	impact	hgvs_c	hgvs_p	gt	zygosity	dp	ad_ref	ad_alt	vaf	qual	filter	kb_clinsig	kb_pop_af
+Tier1	Predicted loss-of-function; rare/absent in population	chrS	3002	T	C	GENE_A	GENE_A-201	+	start_lost	HIGH	c.2T>C	p.Met1?	0/1	het	41	23	18	0.44	222.341	PASS	.	.
+Tier1	Reported Pathogenic in knowledge base	chrS	3118	C	T	GENE_A	GENE_A-201	+	stop_gained	HIGH	c.118C>T	p.Arg40Ter	0/1	het	34	15	19	0.56	222.346	PASS	Pathogenic	0.0
+Tier1	Predicted loss-of-function; rare/absent in population	chrS	3156	G	A	GENE_A	GENE_A-201	+	splice_donor_variant	HIGH	c.155+1G>A	p.?	0/1	het	38	17	21	0.55	222.358	PASS	.	.
+Tier1	Predicted loss-of-function; rare/absent in population	chrS	3729	TG	T	GENE_A	GENE_A-201	+	frameshift_variant	HIGH	c.310del	p.Gly104Alafs	0/1	het	36	20	16	0.44	181.385	PASS	.	.
+Tier1	Predicted loss-of-function; rare/absent in population	chrS	6924	G	GT	GENE_B	GENE_B-201	-	frameshift_variant	HIGH	c.300_301insA	p.Leu101Thrfs	0/1	het	49	27	22	0.45	222.24	PASS	.	.
+Tier1	Predicted loss-of-function; rare/absent in population	chrS	6957	G	A	GENE_B	GENE_B-201	-	stop_gained	HIGH	c.268C>T	p.Gln90Ter	1/1	hom_alt	50	0	50	1.00	225.417	PASS	.	.
+Tier1	Predicted loss-of-function; rare/absent in population	chrS	7036	T	C	GENE_B	GENE_B-201	-	splice_acceptor_variant	HIGH	c.191-2A>G	p.?	0/1	het	46	24	22	0.48	222.398	PASS	.	.
+Tier1	Reported Likely_pathogenic in knowledge base	chrS	7511	T	C	GENE_B	GENE_B-201	-	missense_variant	MODERATE	c.164A>G	p.Lys55Arg	0/1	het	40	17	23	0.57	222.308	PASS	Likely_pathogenic	4e-05
+Tier2	Rare protein-altering variant; needs review (VUS-like)	chrS	3598	C	T	GENE_A	GENE_A-201	+	missense_variant	MODERATE	c.178C>T	p.Arg60Trp	1/1	hom_alt	42	0	42	1.00	225.417	PASS	.	.
+Tier2	Rare protein-altering variant; needs review (VUS-like)	chrS	4198	ATTC	A	GENE_A	GENE_A-201	+	inframe_deletion	MODERATE	c.399_401del	p.Ser134del	0/1	het	37	19	18	0.49	222.403	PASS	.	.
+Tier3	Low predicted impact (intergenic_variant)	chrS	1000	T	C	.	.	.	intergenic_variant	MODIFIER	.	.	1/1	hom_alt	27	0	27	1.00	225.417	PASS	.	.
+Tier3	Reported Benign in knowledge base	chrS	2000	C	T	.	.	.	intergenic_variant	MODIFIER	.	.	0/1	het	47	16	31	0.66	221.94	PASS	Benign	0.35
+Tier3	Low predicted impact (synonymous_variant)	chrS	3075	C	T	GENE_A	GENE_A-201	+	synonymous_variant	LOW	c.75C>T	p.Ala25=	0/1	het	27	14	13	0.48	207.4	PASS	.	.
+Tier3	Low predicted impact (intron_variant)	chrS	3355	G	A	GENE_A	GENE_A-201	+	intron_variant	MODIFIER	c.155+200G>A	.	0/1	het	33	17	16	0.48	222.402	PASS	.	.
+Tier3	Reported Benign in knowledge base	chrS	3658	G	A	GENE_A	GENE_A-201	+	missense_variant	MODERATE	c.238G>A	p.Asp80Asn	0/1	het	36	19	17	0.47	222.393	PASS	Benign	0.12
+Tier3	Low predicted impact (intergenic_variant)	chrS	5301	A	G	.	.	.	intergenic_variant	MODIFIER	.	.	0/1	het	46	25	21	0.46	222.373	PASS	.	.
+Tier3	Low predicted impact (intergenic_variant)	chrS	6101	G	GGC	.	.	.	intergenic_variant	MODIFIER	.	.	0/1	het	38	23	15	0.39	222.395	PASS	.	.
+Tier3	Low predicted impact (synonymous_variant)	chrS	7585	T	C	GENE_B	GENE_B-201	-	synonymous_variant	LOW	c.90A>G	p.Ser30=	0/1	het	48	20	28	0.58	222.284	PASS	.	.
+Tier3	Low predicted impact (intergenic_variant)	chrS	9173	GT	G	.	.	.	intergenic_variant	MODIFIER	.	.	0/1	het	47	20	27	0.57	221.885	PASS	.	.
