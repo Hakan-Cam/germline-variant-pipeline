@@ -146,3 +146,5 @@ This is a compact demonstration, not a clinical pipeline.
 ## Author
 
 Hakan Cam, Ph.D. · [github.com/Hakan-Cam](https://github.com/Hakan-Cam)
+
+Pipeline code developed with AI assistance (Claude); data analysis and interpretation by the author.
