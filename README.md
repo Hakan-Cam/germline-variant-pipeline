@@ -1,4 +1,5 @@
 # germline-variant-pipeline
+> **Update:** this was my first, AI-assisted practice project on synthetic data and GIAB HG002. For my complete hands-on real-data analysis, see [wes-germline-variant-analysis-na12878](https://github.com/Hakan-Cam/wes-germline-variant-analysis-na12878).
 
 [![pipeline-ci](https://github.com/Hakan-Cam/germline-variant-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Hakan-Cam/germline-variant-pipeline/actions/workflows/ci.yml)
 
